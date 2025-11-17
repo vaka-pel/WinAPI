@@ -1,6 +1,8 @@
 #include<Windows.h>
 #include"resource.h"
 
+CONST CHAR g_sz_INVITE[] = "Введите Имя Пользователя: ";
+
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
@@ -30,11 +32,29 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HICON hicon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 		SendMessage(hwnd, WM_SETICON, 0, (LPARAM)hicon);
 		//SetFocus(GetDlgItem(hwnd, IDC_EDIT_LOGIN));
+		SendMessage(GetDlgItem(hwnd, IDC_EDIT_LOGIN), WM_SETTEXT, 0, (LPARAM)g_sz_INVITE);
 	}
 		break;
 	case WM_COMMAND: //обрабатывает команды с клавиатуры и мыши.
 		switch (LOWORD(wParam))
 		{
+			
+			case IDC_EDIT_LOGIN:
+			{
+				HWND hEditLogin = GetDlgItem(hwnd, IDC_EDIT_LOGIN);
+				CONST INT SIZE = 256;
+				CHAR sz_buffer[SIZE] = "";
+				SendMessage(hEditLogin, WM_GETTEXT, SIZE, (LPARAM)sz_buffer);
+				if (HIWORD(wParam) == EN_SETFOCUS && strcmp(sz_buffer, g_sz_INVITE) == 0)
+				{
+					SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)"");
+				}
+				if (HIWORD(wParam) == EN_KILLFOCUS && strcmp(sz_buffer, "") == 0)
+					SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)g_sz_INVITE);
+				
+			}
+		
+			break;
 		case IDC_BUTTON_COPY:
 		{
 			CONST INT SIZE = 256;
