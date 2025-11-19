@@ -42,7 +42,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM iParam)
 			if (i != CB_ERR)
 			{
 				SendMessage(hCombo, CB_GETLBTEXT, i, (LPARAM)sz_buffer);
-				sprintf(sz_message, "Вы выбрали элемент №%i со значением \"%s\"", sz_buffer);
+				sprintf(sz_message, "Вы выбрали элемент №%i со значением \"%s\".", i + 1,  sz_buffer);
 				MessageBox(hwnd, sz_message, "Info", MB_OK | MB_ICONINFORMATION);
 			}
 			else
@@ -57,9 +57,9 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM iParam)
 			break;
 		}
      }
+	break;
 		  case WM_CLOSE:
-
-			EndDialog(hwnd, 0);
+              EndDialog(hwnd, 0);
 		}
 		return FALSE;
 }
