@@ -9,7 +9,9 @@ CONST INT g_i_BUTTON_SIZE = 50;
 CONST INT g_i_INTERVAL = 1;
 CONST INT g_i_DOUBLE_BUTTON_SIZE = g_i_BUTTON_SIZE * 2  + g_i_INTERVAL;
 CONST INT g_i_DISPLAY_WIDTH = g_i_BUTTON_SIZE * 5 + g_i_INTERVAL * 4;
-CONST INT g_i_DISPLAY_HEIGHT = 22;
+CONST INT g_i_DISPLAY_HEIGHT = g_i_BUTTON_SIZE;
+CONST INT g_i_FONT_HEIGHT = g_i_DISPLAY_HEIGHT ;
+CONST INT g_i_FONT_WIDTH = g_i_FONT_HEIGHT / 2.5;
 CONST INT g_i_START_X = 10;
 CONST INT g_i_START_Y = 10;
 CONST INT g_i_BUTTON_START_X = g_i_START_X;
@@ -24,7 +26,9 @@ CONST INT g_i_WINDOW_HEIGHT = g_i_DISPLAY_HEIGHT + g_i_START_Y + (g_i_BUTTON_SIZ
 CONST CHAR g_OPERATIONS[] = "+-*/";
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 VOID SetSkin(HWND hwnd, CONST CHAR skin[]);
+
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
 	//1)Регистрация класса окна:
@@ -94,7 +98,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		AllocConsole();
 		freopen("CONOUT$", "w", stdout);
-		CreateWindowEx
+		HWND hEdit = CreateWindowEx
 		(
 			NULL,
 			"Edit",
@@ -107,6 +111,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		AddFontResourceEx("Fonts\\digital-7.ttf", FR_PRIVATE, 0);
+		HFONT hFont = CreateFont
+		(
+			g_i_FONT_HEIGHT, g_i_FONT_WIDTH,
+			0, 0,
+			FW_BOLD,
+			FALSE,
+			FALSE,
+			FALSE,
+			DEFAULT_CHARSET,
+			OUT_TT_PRECIS,
+			CLIP_TT_ALWAYS,
+			ANTIALIASED_QUALITY,
+			FF_DONTCARE,
+			"Digital-7"
+			);
+		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+
 		CHAR sz_button[2] = {};
 		for (int i = 6; i >= 0; i -= 3)
 		{
@@ -132,7 +154,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HWND hButtonZero = CreateWindowEx
 		(
 			NULL, "Button", "0",
-			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
+			WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP, // BITMAP убрали подпись кнопки
 			X_BUTTON_POSITION(0), Y_BUTTON_POSITION(3),
 			g_i_DOUBLE_BUTTON_SIZE, g_i_BUTTON_SIZE,
 			hwnd,
@@ -162,6 +184,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		
 		CHAR sz_operation[2] = "";
 		for (int i = 0; i < 4; i++)
 		{
@@ -298,7 +321,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			input_operation = FALSE;
 			sprintf(sz_buffer, "%g", a);
-			for(int i = strlen(sz_buffer) - 1; sz_buffer[i] == '0' || sz_buffer[i] == '.'; sz_buffer[i--] = 0);
+			//for(int i = strlen(sz_buffer) - 1; sz_buffer[i] == '0' || sz_buffer[i] == '.'; sz_buffer[i--] = 0);
 			SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)sz_buffer);
 		}
 	}
@@ -404,6 +427,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_CONTEXTMENU:
+	{
+		HMENU cmMain = CreatePopupMenu();
+		AppendMenu(cmMain, MF_STRING, IDM_SQUARE_BLUE, "Square blue");
+		AppendMenu(cmMain, MF_STRING, IDM_METAL_MISTRAL, "Metal mistral");
+		AppendMenu(cmMain, MF_SEPARATOR, NULL, NULL);
+		AppendMenu(cmMain, MF_STRING, IDM_EXIT, "Exit");
+
+		BOOL selected_item = TrackPopupMenuEx
+		(
+			cmMain,
+			TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD |TPM_RIGHTBUTTON | TPM_VERNEGANIMATION,
+			LOWORD(lParam), HIWORD(lParam),
+			//0, // reserved
+			hwnd,
+			NULL
+		);
+		switch(selected_item)
+		{
+		case IDM_SQUARE_BLUE:   SetSkin(hwnd, "square_blue"); break;
+		case IDM_METAL_MISTRAL: SetSkin(hwnd, "metal_mistral"); break;
+		case IDM_EXIT:          SendMessage(hwnd, WM_CLOSE, 0, 0); break;
+		}
+		DestroyMenu(cmMain);
+	}
+	break;
 	case WM_DESTROY:
 		FreeConsole();
 		PostQuitMessage(0);
@@ -433,4 +482,5 @@ VOID SetSkin(HWND hwnd, CONST CHAR skin[])
 		);
 		SendMessage(hButton, BM_SETIMAGE, 0, (LPARAM)bmpButton);
 	}
+
 }
