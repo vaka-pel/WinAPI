@@ -25,6 +25,17 @@ CONST INT g_i_WINDOW_HEIGHT = g_i_DISPLAY_HEIGHT + g_i_START_Y + (g_i_BUTTON_SIZ
 
 CONST CHAR g_OPERATIONS[] = "+-*/";
 
+CONST INT g_i_WINDOW_COLOR = 0;
+CONST INT g_i_DISPLAY_COLOR = 1;
+CONST INT g_i_FONT_COLOR = 2;
+CONST COLORREF g_clr_COLORS[][3] =
+{
+	{RGB(0,0,150), RGB(0,0,100), RGB(255,0,0)}, //1. цвет окна / 2. цвет дисплея
+	{RGB(100,100,100), RGB(50,50,50), RGB(0,255,0)},
+
+};
+CONST CHAR* g_sz_SKIN[] = { "square_blue", "metal_mistral" };
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 VOID SetSkin(HWND hwnd, CONST CHAR skin[]);
@@ -92,6 +103,7 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdS
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static int skinID = 0;
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -241,12 +253,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			HDC hdc = (HDC)wParam; // С сообщения  WM_CTLCOLOREDIT  в wparam принимается HDC элемента EditControl
 			SetBkMode(hdc, OPAQUE); // Делаем фон hEdit не прозрачным
-			SetBkColor(hdc, RGB(0, 0, 100));
-			SetTextColor(hdc, RGB(255, 0, 0));
-			HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 150));
+			SetBkColor(hdc, g_clr_COLORS[skinID][g_i_DISPLAY_COLOR]);
+			SetTextColor(hdc, g_clr_COLORS[skinID][g_i_FONT_COLOR]);
+			HBRUSH hBrush = CreateSolidBrush(g_clr_COLORS[skinID][g_i_WINDOW_COLOR]);
 			SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)hBrush);
 			SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);
-			return (LRESULT)hBrush;
+			DeleteObject(hBrush);
+			//return (LRESULT)hBrush;
 
 		}
 	case WM_COMMAND:
@@ -458,10 +471,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		);
 		switch(selected_item)
 		{
-		case IDM_SQUARE_BLUE:   SetSkin(hwnd, "square_blue"); break;
-		case IDM_METAL_MISTRAL: SetSkin(hwnd, "metal_mistral"); break;
+		case IDM_SQUARE_BLUE:  skinID = 0; break;
+		case IDM_METAL_MISTRAL: skinID = 1; break;
 		case IDM_EXIT:          SendMessage(hwnd, WM_CLOSE, 0, 0); break;
 		}
+		HDC hdc = GetDC(hwnd);
+		SendMessage(hwnd, WM_PAINT, (WPARAM)hdc, (LPARAM)hwnd);
+		InvalidateRect(hwnd, 0, TRUE);
+		SetSkin(hwnd, g_sz_SKIN[skinID]);
 		DestroyMenu(cmMain);
 	}
 	break;
