@@ -487,7 +487,7 @@ VOID SetSkin(HWND hwnd, CONST CHAR skin[])
 VOID SetSkinFromDLL(HWND hwnd, CONST CHAR skin[])
 {
 	HMODULE hSkin = LoadLibrary(skin);
-	for (INT i = IDC_BUTTON_0; i < IDC_BUTTON_EQUAL; i++)
+	for (INT i = IDC_BUTTON_0; i <= IDC_BUTTON_EQUAL; i++)
 	{
 		HBITMAP hBitmap = (HBITMAP)LoadImage
 		(
